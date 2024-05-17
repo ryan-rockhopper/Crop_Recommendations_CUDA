@@ -6,8 +6,7 @@ for use in cross validation.
 '''
 import sys
 import cudf as cd
-import torch
-from transformers import AutoTokenizer, AutoModel
+from cuml.preprocessing import LabelEncoder
 
 def splitData(fullData, numberOfSplits):
     #Shuffles the data in the dataframe and resets the index so it starts at 0 again.
@@ -60,14 +59,14 @@ def extractLabels(dataset, labelColumn):
     else:
         print(f"The dataset did not contain a column with the header {labelColumn}")
 
-def transformMovieTitles(dataset):
-    """Transforms movie titles into a usable value for ML algorithms using pre-trained word embeddings
+def encodeLabels(dataset, labelColumn):
+    """Modifies the dataframe in place and encodes the string labels into integers for better use with algorithms
 
     Args:
-        dataset (cudf dataframe): The dataset that I will be working with
+        dataset (cudf dataframe): The dataframe from which the labels are to be extracted
+        labelColumn (string): The header of the column which contains the labels
     """
-    modelName  = "distilbert-base-uncased"
-    tokenizer  = AutoTokenizer.from_pretrained(modelName)
-    model      = AutoModel.from_pretrained(modelName).to('cuda')
-    
-    return None
+    labelEncoder = LabelEncoder()
+    encodedCategories = labelEncoder.fit_transform(dataset[labelColumn])
+
+    dataset[labelColumn] = encodedCategories
