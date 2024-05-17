@@ -34,7 +34,7 @@ print(f'Test data rows      = {len(testData)}')
 trainingFeatures, trainingLabels = extractLabels(trainingData, 'vote_average')
 testFeatures, testLabels         = extractLabels(testData, 'vote_average')
 
-#TODO: Decision trees not supported. Need to transform data into numerical values before using cuML algorithms.
+#TODO: Decision trees not supported. Need to transform data into numerical values before using cuML algorithms. Consider cuDF category encoding
 #~~DECISION TREE~~ TODO Cross validation
 print("Training Decision Tree Regressor model")
 model   = cuml.DecisionTreeRegressor(max_depth=5)

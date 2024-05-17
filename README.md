@@ -8,3 +8,6 @@
 
 ### Overview
 The purpose of this project is for me to learn and develop my skills with various libraries. I will be mainly utilizing cuML and CUDA based libraries for GPU manipulation of data such as CuPy and cudf. I will be analyzing a dataset that lists movies with their IMDB ratings and a few other features.
+
+### Dependencies
+CUDA, cuDF, cuML, cuPy, transformers, ...

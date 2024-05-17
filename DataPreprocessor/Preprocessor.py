@@ -6,6 +6,8 @@ for use in cross validation.
 '''
 import sys
 import cudf as cd
+import torch
+from transformers import AutoTokenizer, AutoModel
 
 def splitData(fullData, numberOfSplits):
     #Shuffles the data in the dataframe and resets the index so it starts at 0 again.
@@ -57,3 +59,11 @@ def extractLabels(dataset, labelColumn):
     
     else:
         print(f"The dataset did not contain a column with the header {labelColumn}")
+
+def transformMovieTitles(dataset):
+    """Transforms movie titles into a usable value for ML algorithms using pre-trained word embeddings
+
+    Args:
+        dataset (cudf dataframe): The dataset that I will be working with
+    """
+    return None
