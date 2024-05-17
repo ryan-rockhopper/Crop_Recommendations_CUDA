@@ -66,4 +66,8 @@ def transformMovieTitles(dataset):
     Args:
         dataset (cudf dataframe): The dataset that I will be working with
     """
+    modelName  = "distilbert-base-uncased"
+    tokenizer  = AutoTokenizer.from_pretrained(modelName)
+    model      = AutoModel.from_pretrained(modelName).to('cuda')
+    
     return None
