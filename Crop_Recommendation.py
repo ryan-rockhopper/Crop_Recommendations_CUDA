@@ -15,6 +15,7 @@ from cuml.metrics import accuracy_score
 from cuml.metrics import confusion_matrix
 from cuml.ensemble import RandomForestClassifier
 from cuml.linear_model import LogisticRegression
+from cuml.svm import LinearSVC
 from OtherMetrics import findF1
 
 #Set random seeds
@@ -92,3 +93,27 @@ cfMatrix = confusion_matrix(testLabels.astype('int32').values.flatten(), predict
 averageF1 = findF1(cfMatrix)
 print(f"Accuracy for Logistic Regression is:            {round(accuracy, 4)}")
 print(f"Average F1 score for Logistic Regression is:    {round(averageF1, 4)}")
+
+
+#~~SUPPORT VECTOR CLASSIFICATION~~
+print("\n\nTraining Support Vector Classification (SVC) model")
+model   = LinearSVC() #TODO: Check multi_class='ovo' when implemented (Not possible as of 5/20/24)
+start   = time.time()
+model.fit(trainingFeatures.values, trainingLabels.values.flatten()) #SVC expects array not dataframe, hence trainingFeatures.values
+end     = time.time()
+elapsed = end-start
+print(f"Training SVC took {round(elapsed, 2)} seconds.")
+
+print("Making predictions on the testing set")
+start   = time.time()
+predictions = model.predict(testFeatures)
+end     = time.time()
+elapsed = end-start
+print(f"Making predictions took {round(elapsed,2)} seconds.")
+
+#Metrics
+accuracy = accuracy_score(testLabels, predictions)
+cfMatrix = confusion_matrix(testLabels.astype('int32').values.flatten(), predictions.astype('int32').values.flatten())
+averageF1 = findF1(cfMatrix)
+print(f"Accuracy for SVC is:            {round(accuracy, 4)}")
+print(f"Average F1 score for SVC is:    {round(averageF1, 4)}")
