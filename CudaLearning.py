@@ -12,8 +12,10 @@ import cuml
 import DataPreprocessor.Preprocessor as pp
 
 from cuml.metrics import accuracy_score
+from cuml.metrics import confusion_matrix
 from cuml.ensemble import RandomForestClassifier
 from cuml.linear_model import LogisticRegression
+from OtherMetrics import findF1
 
 #Set random seeds
 cp.random.seed(31)
@@ -60,7 +62,13 @@ print(f"Making predictions took {round(elapsed,2)} seconds.")
 
 #Metrics
 accuracy = accuracy_score(testLabels, predictions)
-print(f"Accuracy for the Random Forest is: {round(accuracy, 4)}")
+#confusion_matrix requires int32 or int64, as well as 1D arrays, hence the cast and flattening.
+cfMatrix = confusion_matrix(testLabels.astype('int32').values.flatten(), predictions.astype('int32').values.flatten())
+averageF1 = findF1(cfMatrix)
+print(f"Accuracy for the Random Forest is:          {round(accuracy, 4)}")
+print(f"Average F1 score for the Random Forest is:  {round(averageF1, 4)}")
+
+
 
 #~~LOGISTIC REGRESSION~~
 print("\n\nTraining Logistic Regression model")
@@ -80,4 +88,7 @@ print(f"Making predictions took {round(elapsed,2)} seconds.")
 
 #Metrics
 accuracy = accuracy_score(testLabels, predictions)
-print(f"Accuracy for Logistic Regression is: {round(accuracy, 4)}")
+cfMatrix = confusion_matrix(testLabels.astype('int32').values.flatten(), predictions.astype('int32').values.flatten())
+averageF1 = findF1(cfMatrix)
+print(f"Accuracy for Logistic Regression is:            {round(accuracy, 4)}")
+print(f"Average F1 score for Logistic Regression is:    {round(averageF1, 4)}")
