@@ -43,7 +43,7 @@ testFeatures, testLabels         = pp.extractLabels(testData, 'Crop')
 label0 = trainingLabels.values.flatten()
 
 #TODO Cross validation, Accuracy is low, look into it.
-#TODO: Implement linear regression, decision tree, random forest, gradient boosting machine, support vector regression, and neural network
+#TODO: Implement gradient boosting machine, and neural network
 
 #~~RANDOM FOREST~~
 print("\n\nTraining Decision Tree Regressor model")
@@ -93,6 +93,7 @@ cfMatrix = confusion_matrix(testLabels.astype('int32').values.flatten(), predict
 averageF1 = findF1(cfMatrix)
 print(f"Accuracy for Logistic Regression is:            {round(accuracy, 4)}")
 print(f"Average F1 score for Logistic Regression is:    {round(averageF1, 4)}")
+
 
 
 #~~SUPPORT VECTOR CLASSIFICATION~~
