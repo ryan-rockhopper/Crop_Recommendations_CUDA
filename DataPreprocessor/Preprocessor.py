@@ -9,6 +9,15 @@ import cudf as cd
 from cuml.preprocessing import LabelEncoder
 
 def splitData(fullData, numberOfSplits):
+    """Splits the original dataset into multiple others for use in k-fold cross validation
+
+    Args:
+        fullData (cuDF dataframe): The original dataset that is to be split
+        numberOfSplits (int): The amount of folds to split the dataset into
+
+    Returns:
+        segments: A list containing numberOfSplits dataframes.
+    """
     #Shuffles the data in the dataframe and resets the index so it starts at 0 again.
     shuffledData    = fullData.sample(frac=1, random_state=31).reset_index(drop=True)
     rowCount        = shuffledData.shape[0]
