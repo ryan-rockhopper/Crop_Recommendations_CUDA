@@ -5,7 +5,6 @@ Overview:   This is the 'main' file for the Crop_Recommendation analysis project
 '''
 
 import time
-import torch
 import cuml
 import cupy as cp
 import cudf as cd
@@ -28,11 +27,7 @@ from cuml.dask.common       import to_dask_cudf
 
 #Set random seeds
 cp.random.seed(31)
-torch.manual_seed(31)
-
-# Set random seed for GPU if available
-if torch.cuda.is_available():
-    torch.cuda.manual_seed(31)
+performCrossValidation = True
 
 fullData = cd.read_csv('./data/Crop_Recommendation.csv')
 pp.encodeLabels(fullData, 'Crop')
@@ -45,13 +40,7 @@ print(f'Test data rows      = {len(testData)}')
 trainingFeatures, trainingLabels = pp.extractLabels(trainingData, 'Crop')
 testFeatures, testLabels         = pp.extractLabels(testData, 'Crop')
 
-#DEBUG: Trying to get 1 dimension for labels
-#label0 = testLabels.to_cupy()
-#label0 = label0[1]
-label0 = trainingLabels.values.flatten()
 
-#TODO Cross validation, Accuracy is low, look into it.
-#TODO: Implement gradient boosting machine, and neural network
 
 #~~RANDOM FOREST~~
 print("\n\nTraining Random Forest model")
