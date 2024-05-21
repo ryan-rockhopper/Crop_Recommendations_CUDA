@@ -39,6 +39,7 @@ def randomForest_CV(trainingData, depths, estimators, split_criterions, folds, l
     dataVector = pp.splitData(trainingData, folds)
 
     for i in range (len(depths)):
+        print(f'Current depth: {depths[i]}')
         for j in range (len(estimators)):
             for l in range (len(split_criterions)):
                 avgF1 = 0
@@ -65,4 +66,5 @@ def randomForest_CV(trainingData, depths, estimators, split_criterions, folds, l
                     bestCriteron    = split_criterions[l]
                     highestF1       = avgF1
                     
+        print(f'{round((((i+1) / len(depths)) * 100), 2)}% complete with CV.')
     return bestDepth, bestEstimators, bestCriteron, highestF1

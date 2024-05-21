@@ -47,13 +47,13 @@ testFeatures, testLabels         = pp.extractLabels(testData, 'Crop')
 print("\n\nTraining Random Forest model")
 
 #Found from Cross Validation
-bestDepth       = 5
-bestEstimators  = 50
+bestDepth       = 10
+bestEstimators  = 100
 bestCriteron    = 1
 cvF1            = -1
 
 if performCrossValidation:
-        depths      = [2, 5, 10, 15, 25]
+        depths      = [2, 5, 10, 15]
         estimators  = [5, 10, 25, 50, 100]
         criterions   = [0, 1]
 
@@ -64,12 +64,12 @@ if performCrossValidation:
         elapsed = end-start
         print(f'Performing cross validation for Random Forst took {round(elapsed, 2)} seconds.')
         print(f'The results from CV are printed below:')
-        print(f'Best Depth:     {bestDepth}')
-        print(f'Best number of Estimators:      {bestEstimators}')
         print(f'Best split criterion: Gini Index' if bestCriteron == 0 else 'Best split criterion: Entropy')
-        print(f'Associated F1 score: {cvF1}')
+        print(f'Best Depth:                     {bestDepth}')
+        print(f'Best number of Estimators:      {bestEstimators}')
+        print(f'Associated F1 score:            {round(cvF1, 2)}')
 
-model   = RandomForestClassifier(max_depth=5, n_estimators=50, random_state=31, n_streams=1, split_criterion=1) #TODO: for CV, check gini index (split_criterion=0) and entropy (1)
+model   = RandomForestClassifier(max_depth=bestDepth, n_estimators=bestEstimators, random_state=31, n_streams=1, split_criterion=bestCriteron)
 start   = time.time()
 model.fit(trainingFeatures, trainingLabels.values.flatten())
 end     = time.time()

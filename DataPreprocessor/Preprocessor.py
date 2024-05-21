@@ -58,12 +58,14 @@ def extractLabels(dataset, labelColumn):
         labelColumn (string): The header of the column which contains the labels
 
     Returns:
-        The original dataset with the label column removed and the label column as a separate dataset set 'y'
+        A copy of the original dataset with the label column removed and the label column as a separate dataset set 'y'
     """
+    datasetCopy = dataset.copy()
+
     if labelColumn in dataset.columns:
         y = dataset[[labelColumn]].copy()
-        dataset.drop(columns=[labelColumn], inplace=True)
-        return dataset, y
+        datasetCopy.drop(columns=[labelColumn], inplace=True)
+        return datasetCopy, y
     
     else:
         print(f"The dataset did not contain a column with the header {labelColumn}")
