@@ -41,7 +41,7 @@ print(f'Test data rows      = {len(testData)}')
 trainingFeatures, trainingLabels = pp.extractLabels(trainingData, 'Crop')
 testFeatures, testLabels         = pp.extractLabels(testData, 'Crop')
 
-
+'''
 
 #~~RANDOM FOREST~~
 print("\n\nTraining Random Forest model")
@@ -62,7 +62,7 @@ if performCrossValidation:
         bestDepth, bestEstimators, bestCriteron, cvF1 = cv.randomForest_CV(trainingData, depths, estimators, criterions, 10, 'Crop')
         end     = time.time()
         elapsed = end-start
-        print(f'Performing cross validation for Random Forst took {round(elapsed, 2)} seconds.')
+        print(f'Performing cross validation for Random Forest took {round(elapsed, 2)} seconds.')
         print(f'The results from CV are printed below:')
         print(f'Best split criterion: Gini Index' if bestCriteron == 0 else 'Best split criterion: Entropy')
         print(f'Best Depth:                     {bestDepth}')
@@ -91,11 +91,33 @@ averageF1 = findF1(cfMatrix)
 print(f"Accuracy for the Random Forest is:          {round(accuracy, 4)}")
 print(f"Average F1 score for the Random Forest is:  {round(averageF1, 4)}")
 
-
+'''
 
 #~~LOGISTIC REGRESSION~~
 print("\n\nTraining Logistic Regression model")
-model   = LogisticRegression()
+#Found from previous CV
+bestTol         = 1e-5
+bestC           = 0.1
+bestIterations  = 10000
+
+if performCrossValidation:
+        tols                    = [1e-2, 1e-3, 1e-4, 1e-5, 1e-6, 1e-7]
+        regularizationConstants = [0.1, 0.5, 1.0, 10, 20, 50, 100]
+        itrs                    = [500, 1000, 2000, 5000, 10000]
+
+        print(f'Beginning cross validation for Logistic Regression.')
+        start   = time.time()
+        bestTol, bestC, bestIterations, cvF1 = cv.logisticRegression_CV(trainingData, tols, regularizationConstants, itrs, 10, 'Crop')
+        end     = time.time()
+        elapsed = end-start
+        print(f'Performing cross validation for Random Forst took {round(elapsed, 2)} seconds.')
+        print(f'The results from CV are printed below:')
+        print(f'Best Tolerance:                 {bestTol}')
+        print(f'Best Regularization Constant:   {bestC}')
+        print(f'Best Iteration Limit:           {bestIterations}')
+        print(f'Associated F1 score:            {round(cvF1, 2)}')
+
+model   = LogisticRegression(tol=bestTol, C=bestC, max_iter=bestIterations)
 start   = time.time()
 model.fit(trainingFeatures, trainingLabels.values.flatten())
 end     = time.time()
