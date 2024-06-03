@@ -123,3 +123,71 @@ def logisticRegression_CV(trainingData, tols, reg_C, iterLimits, folds, labelCol
                     
         print(f'{round((((i+1) / len(tols)) * 100), 2)}% complete with CV.')
     return bestTol, bestC, bestIterations, highestF1
+
+def linearSVC_CV(trainingData, penalties, losses, intrPenalize, tols, reg_C, iterLimits, folds, labelCol):
+    """Performs cross validation for the Linear SVC classifier.
+
+    Args:
+        trainingData (cuDF dataframe): The training data which will be split and have cross validation performed on it.
+        penalties (list[string]): Contains either l1 or l2 which are the two regularization terms of the target function.
+        losses (list[string]): Contains either squared_hinge or hinge which are the two loss functions that are applicable.
+        intrPenalize (list[bool]): Contains either True or False which determines if the bias term is penalized in the same way by the regularization term.
+        tols (list[float]): Contains different tolerances for an exit condition on the logistic regression training.
+        reg_C (list[float]): Contains different values for C (the regularization constant)
+        iterLimits (list[int]): Contains different values for the maximum amount of iterations permitted during logistic regression training
+                                if the tolerance is never met
+        folds (int): The number of folds to split the training data into for k-fold cross validation.
+        labelCol (string): The header of the column which contains the labels in trainingData.
+
+    Returns:
+        bestPenalty (string): The penalty associated with the highest F1 score.
+        bestLoss (string): The loss function associated with the highest F1 score.
+        penalize_intercept: True if that is associated with the highest F1 score, false otherwise.
+        bestTol (float): The tolerance associated with the highest F1 score.
+        bestC (float): The regularization constant associated with the highest F1 score.
+        bestIterations: The maximum iteration limit associated with the highest F1 score.
+    """
+    bestPenalty         = -1
+    bestLoss            = -1
+    penalize_intercept  = False
+    bestTol             = -1
+    bestC               = -1
+    bestIterations      = -1
+    highestF1           = -1
+
+    dataVector = pp.splitData(trainingData, folds)
+
+    for t in range (len(penalties)):
+        for y in range (len(losses)):
+            for u in range (len(intrPenalize)):
+                for i in range (len(tols)):
+                    for j in range (len(reg_C)):
+                        for l in range (len(iterLimits)):
+                            avgF1 = 0
+
+                            for k in range (len(dataVector)):
+                                #Concatenate all but the kth dataframe for cross validation
+                                trainingDataFrames = [df for index, df in enumerate(dataVector) if index != k]
+                                trainingDataFrames = cd.concat(trainingDataFrames)
+
+                                trainingFeatures, trainingLabels = pp.extractLabels(trainingDataFrames, labelCol)
+                                testFeatures, testLabels         = pp.extractLabels(dataVector[k], labelCol)
+
+                                model = LinearSVC(penalty=penalties[t], loss=losses[y], penalized_intercept=intrPenalize[u], tol=tols[i], C=reg_C[j], max_iter=iterLimits[l])
+                                model.fit(trainingFeatures.values, trainingLabels.values.flatten())
+                                predictions = model.predict(testFeatures)
+
+                                cfMatrix = confusion_matrix(testLabels.astype('int32').values.flatten(), predictions.astype('int32').values.flatten())
+                                avgF1   += findF1(cfMatrix)
+
+                            avgF1 /= len(dataVector)
+                            if avgF1 > highestF1:
+                                bestPenalty         = penalties[t]
+                                bestLoss            = losses[y]
+                                penalize_intercept  = intrPenalize[u]
+                                bestTol             = tols[i]
+                                bestC               = reg_C[j]
+                                bestIterations      = iterLimits[l]
+                                highestF1           = avgF1
+                    
+    return bestPenalty, bestLoss, penalize_intercept, bestTol, bestC, bestIterations, highestF1
