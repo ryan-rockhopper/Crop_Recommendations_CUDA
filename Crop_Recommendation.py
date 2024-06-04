@@ -142,13 +142,22 @@ print(f"Average F1 score for Logistic Regression is:    {round(averageF1, 4)}")
 
 #~~SUPPORT VECTOR CLASSIFICATION~~
 print("\n\nTraining Support Vector Classification (SVC) model")
-bestPenalty             = 'l2'
+#Found from CV
+bestPenalty             = 'l1'
 bestLoss                = 'squared_hinge'
 interceptPenalized      = False
 bestTol                 = 1e-5
 bestC                   = 0.1
-bestIterations          = 10000
-
+bestIterations          = 500
+'''
+Best Penalty type:              l1
+Best Loss Function:             squared_hinge
+Penalize Intercept:             False
+Best Tolerance:                 1e-05
+Best Regularization Constant:   0.1
+Best Iteration Limit:           500
+Associated F1 score:            0.96
+'''
 if performCrossValidation:
         penalties               = ['l1', 'l2']
         losses                  = ['squared_hinge', 'hinge']
