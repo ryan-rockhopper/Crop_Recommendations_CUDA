@@ -5,6 +5,7 @@ Overview:   This is the 'main' file for the Crop_Recommendation analysis project
 '''
 
 import time
+import sys
 import cuml
 import cupy as cp
 import cudf as cd
@@ -28,7 +29,12 @@ from cuml.dask.common       import to_dask_cudf
 
 #Set random seeds
 cp.random.seed(31)
-performCrossValidation = True
+performCrossValidation = False
+if len(sys.argv) > 1:
+        arguments = [arg.lower() for arg in sys.argv]
+
+        if arguments[1] == 'cv':
+                performCrossValidation = True
 
 fullData = cd.read_csv('./data/Crop_Recommendation.csv')
 pp.encodeLabels(fullData, 'Crop')
@@ -41,11 +47,8 @@ print(f'Test data rows      = {len(testData)}')
 trainingFeatures, trainingLabels = pp.extractLabels(trainingData, 'Crop')
 testFeatures, testLabels         = pp.extractLabels(testData, 'Crop')
 
-'''
 
 #~~RANDOM FOREST~~
-print("\n\nTraining Random Forest model")
-
 #Found from Cross Validation
 bestDepth       = 10
 bestEstimators  = 100
@@ -57,7 +60,7 @@ if performCrossValidation:
         estimators  = [5, 10, 25, 50, 100]
         criterions   = [0, 1]
 
-        print(f'Beginning cross validation for Random Forest.')
+        print(f'\n\nBeginning cross validation for Random Forest.')
         start   = time.time()
         bestDepth, bestEstimators, bestCriteron, cvF1 = cv.randomForest_CV(trainingData, depths, estimators, criterions, 10, 'Crop')
         end     = time.time()
@@ -69,6 +72,7 @@ if performCrossValidation:
         print(f'Best number of Estimators:      {bestEstimators}')
         print(f'Associated F1 score:            {round(cvF1, 2)}')
 
+print("\n\nTraining Random Forest model")
 model   = RandomForestClassifier(max_depth=bestDepth, n_estimators=bestEstimators, random_state=31, n_streams=1, split_criterion=bestCriteron)
 start   = time.time()
 model.fit(trainingFeatures, trainingLabels.values.flatten())
@@ -94,7 +98,6 @@ print(f"Average F1 score for the Random Forest is:  {round(averageF1, 4)}")
 
 
 #~~LOGISTIC REGRESSION~~
-print("\n\nTraining Logistic Regression model")
 #Found from previous CV
 bestTol         = 1e-5
 bestC           = 0.1
@@ -105,7 +108,7 @@ if performCrossValidation:
         regularizationConstants = [0.1, 0.5, 1.0, 10, 20, 50, 100]
         itrs                    = [500, 1000, 2000, 5000, 10000]
 
-        print(f'Beginning cross validation for Logistic Regression.')
+        print(f'\n\nBeginning cross validation for Logistic Regression.')
         start   = time.time()
         bestTol, bestC, bestIterations, cvF1 = cv.logisticRegression_CV(trainingData, tols, regularizationConstants, itrs, 10, 'Crop')
         end     = time.time()
@@ -117,6 +120,7 @@ if performCrossValidation:
         print(f'Best Iteration Limit:           {bestIterations}')
         print(f'Associated F1 score:            {round(cvF1, 2)}')
 
+print("\n\nTraining Logistic Regression model")
 model   = LogisticRegression(tol=bestTol, C=bestC, max_iter=bestIterations)
 start   = time.time()
 model.fit(trainingFeatures, trainingLabels.values.flatten())
@@ -138,8 +142,7 @@ averageF1 = findF1(cfMatrix)
 print(f"Accuracy for Logistic Regression is:            {round(accuracy, 4)}")
 print(f"Average F1 score for Logistic Regression is:    {round(averageF1, 4)}")
 
-'''
-'''
+
 #~~SUPPORT VECTOR CLASSIFICATION~~
 #Found from CV
 bestPenalty             = 'l1'
@@ -157,7 +160,7 @@ if performCrossValidation:
         regularizationConstants = [0.1, 0.5, 1.0, 10, 20, 50, 100]
         itrs                    = [500, 1000, 2000, 5000, 10000]
 
-        print(f'Beginning cross validation for SVC.')
+        print(f'\n\nBeginning cross validation for SVC.')
         start   = time.time()
         bestPenalty, bestLoss, interceptPenalized, bestTol, bestC, bestIterations, cvF1 = cv.linearSVC_CV(trainingData, penalties, losses, penalized_intercept, tols, regularizationConstants, itrs, 10, 'Crop')
         end     = time.time()
@@ -193,7 +196,7 @@ cfMatrix  = confusion_matrix(testLabels.astype('int32').values.flatten(), predic
 averageF1 = findF1(cfMatrix)
 print(f"Accuracy for SVC is:            {round(accuracy, 4)}")
 print(f"Average F1 score for SVC is:    {round(averageF1, 4)}")
-'''
+
 
 
 #~~K-NEAREST NEIGHBORS~~
