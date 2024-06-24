@@ -139,7 +139,7 @@ print(f"Accuracy for Logistic Regression is:            {round(accuracy, 4)}")
 print(f"Average F1 score for Logistic Regression is:    {round(averageF1, 4)}")
 
 '''
-
+'''
 #~~SUPPORT VECTOR CLASSIFICATION~~
 #Found from CV
 bestPenalty             = 'l1'
@@ -148,15 +148,7 @@ interceptPenalized      = False
 bestTol                 = 1e-5
 bestC                   = 0.1
 bestIterations          = 500
-'''
-Best Penalty type:              l1
-Best Loss Function:             squared_hinge
-Penalize Intercept:             False
-Best Tolerance:                 1e-05
-Best Regularization Constant:   0.1
-Best Iteration Limit:           500
-Associated F1 score:            0.96
-'''
+
 if performCrossValidation:
         penalties               = ['l1', 'l2']
         losses                  = ['squared_hinge', 'hinge']
@@ -201,20 +193,20 @@ cfMatrix  = confusion_matrix(testLabels.astype('int32').values.flatten(), predic
 averageF1 = findF1(cfMatrix)
 print(f"Accuracy for SVC is:            {round(accuracy, 4)}")
 print(f"Average F1 score for SVC is:    {round(averageF1, 4)}")
-
+'''
 
 
 #~~K-NEAREST NEIGHBORS~~
 neighborCount   = 5
-distance        = 'euclidean'
+distance        = 'cityblock'
 
 if performCrossValidation:
-        neighbors = [5, 10, 25, 50, 100, 500, 1000]
+        neighbors = [1, 2, 3, 5, 10, 25, 50, 100, 500, 1000]
         distanceMetrics = ['euclidean', 'cityblock', 'chebyshev']
 
         print(f'\n\nBeginning cross validation for K Nearest Neighbors (KNN).')
         start   = time.time()
-        neighborCount, distance, cvF1 = cv.linearSVC_CV(trainingData, neighbors, distanceMetrics, itrs, 10, 'Crop')
+        neighborCount, distance, cvF1 = cv.KNN_CV(trainingData, neighbors, distanceMetrics, 10, 'Crop')
         end     = time.time()
         elapsed = end-start
         print(f'Performing cross validation for KNN took {round(elapsed, 2)} seconds.')
@@ -226,7 +218,7 @@ if performCrossValidation:
 print("\n\nTraining K-Nearest Neighbors (KNN) model")
 model   = KNeighborsClassifier(n_neighbors=neighborCount, metric=distance)
 start   = time.time()
-model.fit(trainingFeatures.values, trainingLabels.values.flatten()) #SVC expects array not dataframe, hence trainingFeatures.values
+model.fit(trainingFeatures.values, trainingLabels.values.flatten()) #KNN expects array not dataframe, hence trainingFeatures.values
 end     = time.time()
 elapsed = end-start
 print(f"Training KNN took {round(elapsed, 2)} seconds.")

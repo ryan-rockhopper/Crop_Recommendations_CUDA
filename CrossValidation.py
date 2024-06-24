@@ -30,6 +30,7 @@ def randomForest_CV(trainingData, depths, estimators, split_criterions, folds, l
         bestDepth (int): The depth associated with the highest F1 score.
         bestEstimators (int): The n_estimators associated with the highest F1 score.
         bestCriteron (int): A 0 or 1 depending on which is associated with the highest F1 score.
+        highestF1: The highest F1 score when the optimal hyperparameters are used
     """
     bestDepth       = -1
     bestEstimators  = -1
@@ -85,6 +86,7 @@ def logisticRegression_CV(trainingData, tols, reg_C, iterLimits, folds, labelCol
         bestTol (float): The tolerance associated with the highest F1 score.
         bestC (float): The regularization constant associated with the highest F1 score.
         bestIterations: The maximum iteration limit associated with the highest F1 score.
+        highestF1: The highest F1 score when the optimal hyperparameters are used
     """
     bestTol         = -1
     bestC           = -1
@@ -146,6 +148,7 @@ def linearSVC_CV(trainingData, penalties, losses, intrPenalize, tols, reg_C, ite
         bestTol (float): The tolerance associated with the highest F1 score.
         bestC (float): The regularization constant associated with the highest F1 score.
         bestIterations: The maximum iteration limit associated with the highest F1 score.
+        highestF1: The highest F1 score when the optimal hyperparameters are used
     """
     bestPenalty         = -1
     bestLoss            = -1
@@ -191,3 +194,53 @@ def linearSVC_CV(trainingData, penalties, losses, intrPenalize, tols, reg_C, ite
                                 highestF1           = avgF1
                     
     return bestPenalty, bestLoss, penalize_intercept, bestTol, bestC, bestIterations, highestF1
+
+def KNN_CV(trainingData, neighborCounts, metrics, folds, labelCol):
+    """Performs Cross Validation for the K Nearest Neighbors classifier.
+
+    Args:
+        trainingData (cuDF dataframe): The training data which will be split and have cross validation performed on it.
+        neighborCounts (list[int]): A list containing integers that are the amount of neighbors (K) for the classifier to consider
+        metrics (list[string]): A list containing strings which represent different different ways to measure distance to the neighbors
+        folds (int): The number of folds to split the training data into for k-fold cross validation.
+        labelCol (string): The header of the column which contains the labels in trainingData.
+
+    Returns:
+        bestK: The amount of neighbors associated with the highest F1 score
+        bestMetric: The measurement that results in the highest F1 score
+        highestF1: The highest F1 score when the optimal hyperparameters are used
+    """
+    bestK       = -1
+    bestMetric  = -1
+    highestF1   = -1
+
+    dataVector = pp.splitData(trainingData, folds)
+
+    for i in range (len(neighborCounts)):
+        print(f'Current K value: {neighborCounts[i]}')
+        for j in range (len(metrics)):
+            avgF1 = 0
+
+            for k in range (len(dataVector)):
+                #Concatenate all but the kth dataframe for cross validation
+                trainingDataFrames = [df for index, df in enumerate(dataVector) if index != k]
+                trainingDataFrames = cd.concat(trainingDataFrames)
+
+                trainingFeatures, trainingLabels = pp.extractLabels(trainingDataFrames, labelCol)
+                testFeatures, testLabels         = pp.extractLabels(dataVector[k], labelCol)
+
+                model   = KNeighborsClassifier(n_neighbors=neighborCounts[i], metric=metrics[j])
+                model.fit(trainingFeatures.values, trainingLabels.values.flatten())
+                predictions = model.predict(testFeatures)
+
+                cfMatrix = confusion_matrix(testLabels.astype('int32').values.flatten(), predictions.astype('int32').values.flatten())
+                avgF1   += findF1(cfMatrix)
+
+            avgF1 /= len(dataVector)
+            if avgF1 > highestF1:
+                bestK       = neighborCounts[i]
+                bestMetric  = metrics[j]
+                highestF1   = avgF1
+                    
+        print(f'{round((((i+1) / len(neighborCounts)) * 100), 2)}% complete with CV.')
+    return bestK, bestMetric, highestF1
