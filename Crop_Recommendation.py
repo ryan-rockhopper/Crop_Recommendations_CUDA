@@ -141,7 +141,6 @@ print(f"Average F1 score for Logistic Regression is:    {round(averageF1, 4)}")
 '''
 
 #~~SUPPORT VECTOR CLASSIFICATION~~
-print("\n\nTraining Support Vector Classification (SVC) model")
 #Found from CV
 bestPenalty             = 'l1'
 bestLoss                = 'squared_hinge'
@@ -181,6 +180,7 @@ if performCrossValidation:
         print(f'Best Iteration Limit:           {bestIterations}')
         print(f'Associated F1 score:            {round(cvF1, 2)}')
 
+print("\n\nTraining Support Vector Classification (SVC) model")
 model   = LinearSVC(penalty=bestPenalty, loss=bestLoss, penalized_intercept=interceptPenalized, tol=bestTol, C=bestC, max_iter=bestIterations) #TODO: Check multi_class='ovo' when implemented (Not possible as of 5/20/24), check hinged loss vs squared hinge loss in CV
 start   = time.time()
 model.fit(trainingFeatures.values, trainingLabels.values.flatten()) #SVC expects array not dataframe, hence trainingFeatures.values
@@ -205,8 +205,26 @@ print(f"Average F1 score for SVC is:    {round(averageF1, 4)}")
 
 
 #~~K-NEAREST NEIGHBORS~~
+neighborCount   = 5
+distance        = 'euclidean'
+
+if performCrossValidation:
+        neighbors = [5, 10, 25, 50, 100, 500, 1000]
+        distanceMetrics = ['euclidean', 'cityblock', 'chebyshev']
+
+        print(f'\n\nBeginning cross validation for K Nearest Neighbors (KNN).')
+        start   = time.time()
+        neighborCount, distance, cvF1 = cv.linearSVC_CV(trainingData, neighbors, distanceMetrics, itrs, 10, 'Crop')
+        end     = time.time()
+        elapsed = end-start
+        print(f'Performing cross validation for KNN took {round(elapsed, 2)} seconds.')
+        print(f'The results from CV are printed below:')
+        print(f'Best Neighbor Count:              {neighborCount}')
+        print(f'Best Distance Metric:             {distance}')
+        print(f'Associated F1 score:              {round(cvF1, 2)}')
+
 print("\n\nTraining K-Nearest Neighbors (KNN) model")
-model   = KNeighborsClassifier(n_neighbors=5) #TODO: n_neighbors is hyperparameter
+model   = KNeighborsClassifier(n_neighbors=neighborCount, metric=distance)
 start   = time.time()
 model.fit(trainingFeatures.values, trainingLabels.values.flatten()) #SVC expects array not dataframe, hence trainingFeatures.values
 end     = time.time()
